@@ -1,0 +1,23 @@
+---
+name: isotovideo
+# yamllint disable-line rule:truthy
+on: [push, pull_request]
+jobs:
+  isotovideo:
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@v2
+      - name: Prepare openQA test module
+        run: |
+          mkdir -p lib/Foo/Bar tests/spam needles
+          printf "package Foo::Bar::Baz; use Mojo::Base 'Exporter'; our @EXPORT_OK = qw(bla); sub bla {}; 1" > lib/Foo/Bar/Baz.pm
+          printf "use Mojo::Base 'basetest'; use Foo::Bar::Baz 'bla'; sub run {}; 1" > tests/spam/eggs.pm
+      - name: Run the action implemented in this repo
+        uses: ./
+        with:
+          schedule: tests/spam/eggs
+      - uses: actions/upload-artifact@v2
+        with:
+          name: Test results
+          path: .
+        if: always()
